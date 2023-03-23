@@ -1,0 +1,70 @@
+
+Find the maximum marks obtained out of four
+subjects by an student.
+
+Sample schema: STUD_ID, NAME, CLASS,
+TOT_MARKS, MATH, ENGLISH, PHYSICS,
+SOCIAL_STUDY, YEAR
+
+-----------------
+CREATE TABLE student(
+stud_id int,
+name string,
+class int,
+tot_marks double,
+math double,
+english double,
+physics double,
+social_study double,
+year string
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ',' ;
+
+--------------------------
+101,tom,9,358,85,95,86,92,2015
+102,racky,9,360,90,90,90,90,2015
+103,marrie,9,370,92,94,94,90,2015
+104,harry,9,365,88,88,89,90,2015
+105,rosy,9,350,90,80,90,90,2015
+-------------
+LOAD DATA LOCAL INPATH 'student_data.txt' OVERWRITE INTO TABLE student
+
+--------------
+
+package com.hive.udf;
+import org.apache.hadoop.hive.ql.exec.UDF;
+public class GetMaxMarks extends UDF{
+public double evaluate (double math,double eng,double
+physics,double social)
+{
+
+double maxMarks=math;
+
+if(eng>maxMarks)
+{
+maxMarks = eng;
+}
+if(physics>maxMarks)
+{
+maxMarks=physics;
+}
+if(social>maxMarks)
+{
+maxMarks=social;
+}
+return maxMarks;
+}
+}
+
+
+---------------------------------------------
+ADD JAR /usr/lib/hive/lib/hiveudfmaxmarks.jar;
+----------------------------
+
+CREATE temporary function GetMaxMarks as
+'com.hive.udf.GetMaxMarks';
+------------------
+select name, GetMaxMarks(math,english,physics,social_study) from student;
+---------------
+
